@@ -1,0 +1,49 @@
+services:
+  anheyu:
+    build: .
+    # image: anheyu/anheyu-backend:latest
+    container_name: anheyu-backend
+    depends_on:
+      - anheyu_postgresql
+      - anheyu_redis
+    restart: always
+    ports:
+      - 8091:8091
+    environment:
+      - ANHEYU_DATABASE_TYPE=postgres
+      - ANHEYU_DATABASE_HOST=anheyu_postgresql
+      - ANHEYU_DATABASE_USER=anheyu
+      - ANHEYU_DATABASE_NAME=anheyu
+      - ANHEYU_DATABASE_PORT=5432
+      - ANHEYU_DATABASE_PASSWORD=
+      - ANHEYU_REDIS_ADDR=anheyu_redis:6379
+    volumes:
+      - ./data:/anheyu/data
+      - ./themes:/anheyu/themes
+      - ./static:/anheyu/static
+      - ./backup:/anheyu/backup
+
+  anheyu_postgresql:
+    # Best practice: Pin to major version.
+    # NOTE: For major version jumps:
+    # backup & consult https://www.postgresql.org/docs/current/pgupgrade.html
+    image: postgres:17
+    container_name: anheyu_postgresql
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=anheyu
+      - POSTGRES_DB=anheyu
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+
+  anheyu_redis:
+    image: redis:latest
+    container_name: anheyu_redis
+    volumes:
+      - redis_data:/data
+
+volumes:
+  database_postgres:
+  redis_data:
