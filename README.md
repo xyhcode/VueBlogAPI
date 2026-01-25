@@ -4,6 +4,7 @@
 文档: 📖 [AnHeYu Docs](https://dev.anheyu.com)
 
 ## 开发启动
+> 需要先在根目录下创建 `assets` 文件夹 把前端项目放到文件夹里面
 1. 运行 `go mod tidy` 安装依赖
 2. 运行 `go run main_dev.go` 启动服务
 
