@@ -202,6 +202,12 @@ var AllSettings = []Definition{
 	{Key: constant.KeyRecentCommentsBannerTitle, Value: "评论", Comment: "最近评论页面横幅标题", IsPublic: true},
 	{Key: constant.KeyRecentCommentsBannerDescription, Value: "最近评论", Comment: "最近评论页面横幅描述", IsPublic: true},
 	{Key: constant.KeyRecentCommentsBannerTip, Value: "发表你的观点和看法，让更多人看到", Comment: "最近评论页面横幅提示", IsPublic: true},
+
+	// --- 即刻页面配置 ---
+	{Key: constant.KeyEssayBannerBackground, Value: "https://upload-bbs.miyoushe.com/upload/2025/09/03/125766904/ef4aa528bb9eec3b4a288d1ca2190145_4127101134334568741.jpg?x-oss-process=image/format,avif", Comment: "即刻页面横幅背景图", IsPublic: true},
+	{Key: constant.KeyEssayBannerTitle, Value: "即刻", Comment: "即刻页面横幅标题", IsPublic: true},
+	{Key: constant.KeyEssayBannerDescription, Value: "即刻内容", Comment: "即刻页面横幅描述", IsPublic: true},
+	{Key: constant.KeyEssayBannerTip, Value: "分享你的生活感悟和思考", Comment: "即刻页面横幅提示", IsPublic: true},
 	{Key: constant.KeyCommentEnable, Value: "true", Comment: "是否启用评论功能", IsPublic: true},
 	{Key: constant.KeyCommentLoginRequired, Value: "false", Comment: "是否开启登录后评论", IsPublic: true},
 	{Key: constant.KeyCommentPageSize, Value: "10", Comment: "评论每页数量", IsPublic: true},

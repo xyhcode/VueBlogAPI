@@ -218,6 +218,11 @@ const (
 	KeyRecentCommentsBannerDescription SettingKey = "recent_comments.banner.description"
 	KeyRecentCommentsBannerTip         SettingKey = "recent_comments.banner.tip"
 
+	KeyEssayBannerBackground  SettingKey = "essay.banner.background"
+	KeyEssayBannerTitle       SettingKey = "essay.banner.title"
+	KeyEssayBannerDescription SettingKey = "essay.banner.description"
+	KeyEssayBannerTip         SettingKey = "essay.banner.tip"
+
 	// 评论配置
 	KeyCommentEnable            SettingKey = "comment.enable"
 	KeyCommentLoginRequired     SettingKey = "comment.login_required"
