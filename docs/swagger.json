@@ -18,6 +18,265 @@
     "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
+        "/public/essay": {
+            "get": {
+                "description": "获取随笔记录列表（分页），无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "随笔管理"
+                ],
+                "summary": "获取随笔记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码，默认1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认10",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/repository.PageResult-model.Essay"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/essay": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建新的随笔记录，需要认证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "随笔管理"
+                ],
+                "summary": "创建随笔记录",
+                "parameters": [
+                    {
+                        "description": "随笔记录信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateEssayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Essay"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "创建失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/essay/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新随笔记录，需要认证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "随笔管理"
+                ],
+                "summary": "更新随笔记录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "随笔记录信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UpdateEssayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Essay"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误或ID非法",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除随笔记录，需要认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "随笔管理"
+                ],
+                "summary": "删除随笔记录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "记录ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "参数错误或ID非法",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "未授权",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "记录不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/user-groups": {
             "get": {
                 "security": [
@@ -13021,6 +13280,139 @@
                     "type": "string"
                 }
             }
+        },
+        "model.CreateEssayRequest": {
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "随笔内容"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "随笔日期"
+                },
+                "images": {
+                    "type": "array",
+                    "description": "随笔图片列表",
+                    "items": {
+                        "$ref": "#/definitions/model.Image"
+                    }
+                },
+                "link": {
+                    "type": "string",
+                    "description": "随笔链接"
+                }
+            },
+            "required": [
+                "content",
+                "date"
+            ],
+            "type": "object"
+        },
+        "model.UpdateEssayRequest": {
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "随笔内容"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "随笔日期"
+                },
+                "images": {
+                    "type": "array",
+                    "description": "随笔图片列表",
+                    "items": {
+                        "$ref": "#/definitions/model.Image"
+                    }
+                },
+                "link": {
+                    "type": "string",
+                    "description": "随笔链接"
+                }
+            },
+            "required": [
+                "content",
+                "date"
+            ],
+            "type": "object"
+        },
+        "model.Image": {
+            "properties": {
+                "alt": {
+                    "type": "string",
+                    "description": "图片描述"
+                },
+                "url": {
+                    "type": "string",
+                    "description": "图片URL"
+                }
+            },
+            "type": "object"
+        },
+        "model.Essay": {
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "随笔内容"
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "创建时间"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "随笔日期"
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "主键ID"
+                },
+                "images": {
+                    "type": "array",
+                    "description": "随笔图片列表",
+                    "items": {
+                        "$ref": "#/definitions/model.Image"
+                    }
+                },
+                "link": {
+                    "type": "string",
+                    "description": "随笔链接"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "description": "更新时间"
+                }
+            },
+            "type": "object"
+        },
+        "repository.PageResult-model.Essay": {
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "description": "数据项列表",
+                    "items": {
+                        "$ref": "#/definitions/model.Essay"
+                    }
+                },
+                "pageNum": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "当前页码"
+                },
+                "pageSize": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "每页数量"
+                },
+                "total": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "总数量"
+                }
+            },
+            "type": "object"
         }
     },
     "securityDefinitions": {

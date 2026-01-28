@@ -322,6 +322,24 @@ var (
 		Columns:    EntitiesColumns,
 		PrimaryKey: []*schema.Column{EntitiesColumns[0]},
 	}
+	// EssaysColumns holds the columns for the "essays" table.
+	EssaysColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint, Increment: true, Comment: "主键ID"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
+		{Name: "content", Type: field.TypeString, Size: 2147483647, Comment: "随笔内容"},
+		{Name: "date", Type: field.TypeTime, Comment: "随笔日期"},
+		{Name: "images", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "随笔图片列表(JSON格式字符串)"},
+		{Name: "link", Type: field.TypeString, Nullable: true, Comment: "随笔链接"},
+	}
+	// EssaysTable holds the schema information for the "essays" table.
+	EssaysTable = &schema.Table{
+		Name:       "essays",
+		Comment:    "随笔记录表",
+		Columns:    EssaysColumns,
+		PrimaryKey: []*schema.Column{EssaysColumns[0]},
+	}
 	// FilesColumns holds the columns for the "files" table.
 	FilesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint, Increment: true},
@@ -1044,6 +1062,7 @@ var (
 		DirectLinksTable,
 		DocSeriesTable,
 		EntitiesTable,
+		EssaysTable,
 		FilesTable,
 		FileEntitiesTable,
 		GiveMoneysTable,

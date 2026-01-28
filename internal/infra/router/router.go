@@ -22,6 +22,7 @@ import (
 	config_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/config"
 	direct_link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/direct_link"
 	doc_series_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/doc_series"
+	essay_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/essay"
 	file_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/file"
 	givemoney_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/givemoney"
 	link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/link"
@@ -71,6 +72,7 @@ type Router struct {
 	storagePolicyHandler      *storage_policy_handler.StoragePolicyHandler
 	fileHandler               *file_handler.FileHandler
 	giveMoneyHandler          *givemoney_handler.GiveMoneyHandler
+	essayHandler              *essay_handler.Handler
 	directLinkHandler         *direct_link_handler.DirectLinkHandler
 	thumbnailHandler          *thumbnail_handler.ThumbnailHandler
 	articleHandler            *article_handler.Handler
@@ -107,6 +109,7 @@ func NewRouter(
 	storagePolicyHandler *storage_policy_handler.StoragePolicyHandler,
 	fileHandler *file_handler.FileHandler,
 	giveMoneyHandler *givemoney_handler.GiveMoneyHandler,
+	essayHandler *essay_handler.Handler,
 	directLinkHandler *direct_link_handler.DirectLinkHandler,
 	thumbnailHandler *thumbnail_handler.ThumbnailHandler,
 	articleHandler *article_handler.Handler,
@@ -141,6 +144,7 @@ func NewRouter(
 		storagePolicyHandler:      storagePolicyHandler,
 		fileHandler:               fileHandler,
 		giveMoneyHandler:          giveMoneyHandler,
+		essayHandler:              essayHandler,
 		directLinkHandler:         directLinkHandler,
 		thumbnailHandler:          thumbnailHandler,
 		articleHandler:            articleHandler,
@@ -216,6 +220,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 	r.registerNotificationRoutes(apiGroup)
 	r.registerConfigBackupRoutes(apiGroup)
 	r.registerGiveMoneyRoutes(apiGroup)
+	r.registerEssayRoutes(apiGroup)
 	r.registerSitemapRoutes(engine) // 直接注册到engine，不使用/api前缀
 }
 
@@ -854,5 +859,28 @@ func (r *Router) registerGiveMoneyRoutes(api *gin.RouterGroup) {
 
 		// 删除打赏记录: DELETE /api/givemoney/:id
 		giveMoneyAdmin.DELETE("/:id", r.giveMoneyHandler.DeleteRecord)
+	}
+}
+
+// registerEssayRoutes 注册随笔记录相关的路由
+func (r *Router) registerEssayRoutes(api *gin.RouterGroup) {
+	// --- 前台公开接口 ---
+	essayPublic := api.Group("/public/essay")
+	{
+		// 获取所有随笔记录（分页）: GET /api/public/essay
+		essayPublic.GET("", r.essayHandler.GetAllEssays)
+	}
+
+	// --- 后台管理接口 ---
+	essayAdmin := api.Group("/essay").Use(r.mw.JWTAuth(), r.mw.AdminAuth())
+	{
+		// 创建随笔记录: POST /api/essay
+		essayAdmin.POST("", r.essayHandler.CreateEssay)
+
+		// 更新随笔记录: PUT /api/essay/:id
+		essayAdmin.PUT("/:id", r.essayHandler.UpdateEssay)
+
+		// 删除随笔记录: DELETE /api/essay/:id
+		essayAdmin.DELETE("/:id", r.essayHandler.DeleteEssay)
 	}
 }

@@ -44,6 +44,7 @@ import (
 	config_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/config"
 	direct_link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/direct_link"
 	doc_series_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/doc_series"
+	essay_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/essay"
 	file_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/file"
 	givemoney_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/givemoney"
 	link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/link"
@@ -77,6 +78,7 @@ import (
 	config_service "github.com/anzhiyu-c/anheyu-app/pkg/service/config"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/direct_link"
 	doc_series_service "github.com/anzhiyu-c/anheyu-app/pkg/service/doc_series"
+	"github.com/anzhiyu-c/anheyu-app/pkg/service/essay"
 	file_service "github.com/anzhiyu-c/anheyu-app/pkg/service/file"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/file_info"
 	geetest_service "github.com/anzhiyu-c/anheyu-app/pkg/service/geetest"
@@ -231,6 +233,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 	notificationTypeRepo := ent_impl.NewEntNotificationTypeRepository(entClient)
 	userNotificationConfigRepo := ent_impl.NewEntUserNotificationConfigRepository(entClient)
 	giveMoneyRepo := ent_impl.NewGiveMoneyRepository(entClient)
+	essayRepo := ent_impl.NewEssayRepository(entClient)
 
 	// --- Phase 4: 初始化应用引导程序 ---
 	bootstrapper := bootstrap.NewBootstrapper(entClient)
@@ -449,6 +452,11 @@ func NewApp(content embed.FS) (*App, func(), error) {
 	giveMoneySvc := givemoney.NewGiveMoneyService(giveMoneyRepo)
 	log.Printf("[DEBUG] GiveMoneyService 初始化完成")
 
+	// 初始化随笔服务
+	log.Printf("[DEBUG] 正在初始化 EssayService...")
+	essaySvc := essay.NewService(essayRepo)
+	log.Printf("[DEBUG] EssayService 初始化完成")
+
 	// --- Phase 6: 初始化表现层 (Handlers) ---
 	mw := middleware.NewMiddleware(tokenSvc)
 	authHandler := auth_handler.NewAuthHandler(authSvc, tokenSvc, settingSvc, captchaSvc)
@@ -459,6 +467,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 	settingHandler := setting_handler.NewSettingHandler(settingSvc, emailSvc, cdnSvc, configBackupSvc)
 	storagePolicyHandler := storage_policy_handler.NewStoragePolicyHandler(storagePolicySvc)
 	giveMoneyHandler := givemoney_handler.NewGiveMoneyHandler(giveMoneySvc)
+	essayHandler := essay_handler.NewHandler(essaySvc)
 	fileHandler := file_handler.NewHandler(fileSvc, uploadSvc, settingSvc)
 	directLinkHandler := direct_link_handler.NewDirectLinkHandler(directLinkSvc, storageProviders)
 	linkHandler := link_handler.NewHandler(linkSvc)
@@ -494,6 +503,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 		storagePolicyHandler,
 		fileHandler,
 		giveMoneyHandler,
+		essayHandler,
 		directLinkHandler,
 		thumbnailHandler,
 		articleHandler,

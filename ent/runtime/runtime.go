@@ -13,6 +13,7 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/ent/directlink"
 	"github.com/anzhiyu-c/anheyu-app/ent/docseries"
 	"github.com/anzhiyu-c/anheyu-app/ent/entity"
+	"github.com/anzhiyu-c/anheyu-app/ent/essay"
 	"github.com/anzhiyu-c/anheyu-app/ent/file"
 	"github.com/anzhiyu-c/anheyu-app/ent/fileentity"
 	"github.com/anzhiyu-c/anheyu-app/ent/givemoney"
@@ -455,6 +456,25 @@ func init() {
 	entityDescDimension := entityFields[12].Descriptor()
 	// entity.DimensionValidator is a validator for the "dimension" field. It is called by the builders before save.
 	entity.DimensionValidator = entityDescDimension.Validators[0].(func(string) error)
+	essayMixin := schema.Essay{}.Mixin()
+	essayMixinHooks0 := essayMixin[0].Hooks()
+	essay.Hooks[0] = essayMixinHooks0[0]
+	essayFields := schema.Essay{}.Fields()
+	_ = essayFields
+	// essayDescCreatedAt is the schema descriptor for created_at field.
+	essayDescCreatedAt := essayFields[1].Descriptor()
+	// essay.DefaultCreatedAt holds the default value on creation for the created_at field.
+	essay.DefaultCreatedAt = essayDescCreatedAt.Default.(func() time.Time)
+	// essayDescUpdatedAt is the schema descriptor for updated_at field.
+	essayDescUpdatedAt := essayFields[2].Descriptor()
+	// essay.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	essay.DefaultUpdatedAt = essayDescUpdatedAt.Default.(func() time.Time)
+	// essay.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	essay.UpdateDefaultUpdatedAt = essayDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// essayDescDate is the schema descriptor for date field.
+	essayDescDate := essayFields[4].Descriptor()
+	// essay.DefaultDate holds the default value on creation for the date field.
+	essay.DefaultDate = essayDescDate.Default.(func() time.Time)
 	fileMixin := schema.File{}.Mixin()
 	fileMixinHooks0 := fileMixin[0].Hooks()
 	file.Hooks[0] = fileMixinHooks0[0]
