@@ -42,7 +42,7 @@ func (h *GiveMoneyHandler) GetAllRecords(c *gin.Context) {
 	// 解析分页参数
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	
+
 	// 参数验证
 	if page < 1 {
 		page = 1
@@ -50,14 +50,14 @@ func (h *GiveMoneyHandler) GetAllRecords(c *gin.Context) {
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 10
 	}
-	
+
 	// 调用服务获取分页数据
 	pageResult, err := h.giveMoneySvc.GetRecordsByPage(c.Request.Context(), page, pageSize)
 	if err != nil {
 		response.Fail(c, http.StatusInternalServerError, "获取打赏记录失败: "+err.Error())
 		return
 	}
-	
+
 	response.Success(c, gin.H{
 		"list":     pageResult.Items,
 		"total":    pageResult.Total,
@@ -84,22 +84,22 @@ func (h *GiveMoneyHandler) CreateRecord(c *gin.Context) {
 		Nickname string `json:"nickname" binding:"required"`
 		Figure   int    `json:"figure" binding:"required"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "参数错误: "+err.Error())
 		return
 	}
-	
+
 	record, err := h.giveMoneySvc.CreateRecord(c.Request.Context(), givemoney.CreateGiveMoneyParams{
 		Nickname: req.Nickname,
 		Figure:   req.Figure,
 	})
-	
+
 	if err != nil {
 		response.Fail(c, http.StatusInternalServerError, "创建打赏记录失败: "+err.Error())
 		return
 	}
-	
+
 	response.Success(c, record, "创建打赏记录成功")
 }
 
@@ -124,27 +124,27 @@ func (h *GiveMoneyHandler) UpdateRecord(c *gin.Context) {
 		response.Fail(c, http.StatusBadRequest, "ID非法")
 		return
 	}
-	
+
 	var req struct {
 		Nickname string `json:"nickname" binding:"required"`
 		Figure   int    `json:"figure" binding:"required"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "参数错误: "+err.Error())
 		return
 	}
-	
+
 	record, err := h.giveMoneySvc.UpdateRecord(c.Request.Context(), uint(id), givemoney.UpdateGiveMoneyParams{
 		Nickname: req.Nickname,
 		Figure:   req.Figure,
 	})
-	
+
 	if err != nil {
 		response.Fail(c, http.StatusInternalServerError, "更新打赏记录失败: "+err.Error())
 		return
 	}
-	
+
 	response.Success(c, record, "更新打赏记录成功")
 }
 
@@ -166,11 +166,11 @@ func (h *GiveMoneyHandler) DeleteRecord(c *gin.Context) {
 		response.Fail(c, http.StatusBadRequest, "ID非法")
 		return
 	}
-	
+
 	if err := h.giveMoneySvc.DeleteRecord(c.Request.Context(), uint(id)); err != nil {
 		response.Fail(c, http.StatusInternalServerError, "删除打赏记录失败: "+err.Error())
 		return
 	}
-	
+
 	response.Success(c, nil, "删除打赏记录成功")
 }

@@ -326,6 +326,54 @@ func (f EssayMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EssayMutation", m)
 }
 
+// The FCirclePostQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type FCirclePostQueryRuleFunc func(context.Context, *ent.FCirclePostQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f FCirclePostQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.FCirclePostQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.FCirclePostQuery", q)
+}
+
+// The FCirclePostMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type FCirclePostMutationRuleFunc func(context.Context, *ent.FCirclePostMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f FCirclePostMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.FCirclePostMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.FCirclePostMutation", m)
+}
+
+// The FCircleStatisticQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type FCircleStatisticQueryRuleFunc func(context.Context, *ent.FCircleStatisticQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f FCircleStatisticQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.FCircleStatisticQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.FCircleStatisticQuery", q)
+}
+
+// The FCircleStatisticMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type FCircleStatisticMutationRuleFunc func(context.Context, *ent.FCircleStatisticMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f FCircleStatisticMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.FCircleStatisticMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.FCircleStatisticMutation", m)
+}
+
 // The FileQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type FileQueryRuleFunc func(context.Context, *ent.FileQuery) error

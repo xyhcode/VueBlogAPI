@@ -11,8 +11,9 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/anzhiyu-c/anheyu-app/pkg/service/file"
+	"github.com/anzhiyu-c/anheyu-app/pkg/domain/repository"
 	article_history_service "github.com/anzhiyu-c/anheyu-app/pkg/service/article_history"
+	"github.com/anzhiyu-c/anheyu-app/pkg/service/file"
 
 	"github.com/robfig/cron/v3"
 )
@@ -25,6 +26,8 @@ type Scheduler struct {
 	// 在这里注入所有任务可能需要的 service 依赖
 	uploadSvc         file.IUploadService
 	articleHistorySvc article_history_service.Service
+	linkRepo          repository.LinkRepository
+	db                interface{} // 数据库客户端
 }
 
 // NewScheduler 是 Scheduler 的构造函数。

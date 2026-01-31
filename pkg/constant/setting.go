@@ -218,10 +218,17 @@ const (
 	KeyRecentCommentsBannerDescription SettingKey = "recent_comments.banner.description"
 	KeyRecentCommentsBannerTip         SettingKey = "recent_comments.banner.tip"
 
+	// 随笔配置
 	KeyEssayBannerBackground  SettingKey = "essay.banner.background"
 	KeyEssayBannerTitle       SettingKey = "essay.banner.title"
 	KeyEssayBannerDescription SettingKey = "essay.banner.description"
 	KeyEssayBannerTip         SettingKey = "essay.banner.tip"
+
+	// 朋友圈配置
+	KeyFcircleBannerBackground  SettingKey = "fcircle.banner.background"
+	KeyFcircleBannerTitle       SettingKey = "fcircle.banner.title"
+	KeyFcircleBannerDescription SettingKey = "fcircle.banner.description"
+	KeyFcircleBannerTip         SettingKey = "fcircle.banner.tip"
 
 	// 评论配置
 	KeyCommentEnable            SettingKey = "comment.enable"

@@ -14,6 +14,8 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/ent/docseries"
 	"github.com/anzhiyu-c/anheyu-app/ent/entity"
 	"github.com/anzhiyu-c/anheyu-app/ent/essay"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclepost"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclestatistic"
 	"github.com/anzhiyu-c/anheyu-app/ent/file"
 	"github.com/anzhiyu-c/anheyu-app/ent/fileentity"
 	"github.com/anzhiyu-c/anheyu-app/ent/givemoney"
@@ -475,6 +477,50 @@ func init() {
 	essayDescDate := essayFields[4].Descriptor()
 	// essay.DefaultDate holds the default value on creation for the date field.
 	essay.DefaultDate = essayDescDate.Default.(func() time.Time)
+	fcirclepostFields := schema.FCirclePost{}.Fields()
+	_ = fcirclepostFields
+	// fcirclepostDescTitle is the schema descriptor for title field.
+	fcirclepostDescTitle := fcirclepostFields[0].Descriptor()
+	// fcirclepost.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	fcirclepost.TitleValidator = fcirclepostDescTitle.Validators[0].(func(string) error)
+	// fcirclepostDescLink is the schema descriptor for link field.
+	fcirclepostDescLink := fcirclepostFields[1].Descriptor()
+	// fcirclepost.LinkValidator is a validator for the "link" field. It is called by the builders before save.
+	fcirclepost.LinkValidator = fcirclepostDescLink.Validators[0].(func(string) error)
+	// fcirclepostDescAuthor is the schema descriptor for author field.
+	fcirclepostDescAuthor := fcirclepostFields[4].Descriptor()
+	// fcirclepost.AuthorValidator is a validator for the "author" field. It is called by the builders before save.
+	fcirclepost.AuthorValidator = fcirclepostDescAuthor.Validators[0].(func(string) error)
+	// fcirclepostDescFriendLink is the schema descriptor for friend_link field.
+	fcirclepostDescFriendLink := fcirclepostFields[6].Descriptor()
+	// fcirclepost.FriendLinkValidator is a validator for the "friend_link" field. It is called by the builders before save.
+	fcirclepost.FriendLinkValidator = fcirclepostDescFriendLink.Validators[0].(func(string) error)
+	// fcirclepostDescCrawledAt is the schema descriptor for crawled_at field.
+	fcirclepostDescCrawledAt := fcirclepostFields[7].Descriptor()
+	// fcirclepost.DefaultCrawledAt holds the default value on creation for the crawled_at field.
+	fcirclepost.DefaultCrawledAt = fcirclepostDescCrawledAt.Default.(func() time.Time)
+	fcirclestatisticFields := schema.FCircleStatistic{}.Fields()
+	_ = fcirclestatisticFields
+	// fcirclestatisticDescFriendsNum is the schema descriptor for friends_num field.
+	fcirclestatisticDescFriendsNum := fcirclestatisticFields[0].Descriptor()
+	// fcirclestatistic.DefaultFriendsNum holds the default value on creation for the friends_num field.
+	fcirclestatistic.DefaultFriendsNum = fcirclestatisticDescFriendsNum.Default.(int)
+	// fcirclestatisticDescActiveNum is the schema descriptor for active_num field.
+	fcirclestatisticDescActiveNum := fcirclestatisticFields[1].Descriptor()
+	// fcirclestatistic.DefaultActiveNum holds the default value on creation for the active_num field.
+	fcirclestatistic.DefaultActiveNum = fcirclestatisticDescActiveNum.Default.(int)
+	// fcirclestatisticDescErrorNum is the schema descriptor for error_num field.
+	fcirclestatisticDescErrorNum := fcirclestatisticFields[2].Descriptor()
+	// fcirclestatistic.DefaultErrorNum holds the default value on creation for the error_num field.
+	fcirclestatistic.DefaultErrorNum = fcirclestatisticDescErrorNum.Default.(int)
+	// fcirclestatisticDescArticleNum is the schema descriptor for article_num field.
+	fcirclestatisticDescArticleNum := fcirclestatisticFields[3].Descriptor()
+	// fcirclestatistic.DefaultArticleNum holds the default value on creation for the article_num field.
+	fcirclestatistic.DefaultArticleNum = fcirclestatisticDescArticleNum.Default.(int)
+	// fcirclestatisticDescLastUpdatedTime is the schema descriptor for last_updated_time field.
+	fcirclestatisticDescLastUpdatedTime := fcirclestatisticFields[4].Descriptor()
+	// fcirclestatistic.DefaultLastUpdatedTime holds the default value on creation for the last_updated_time field.
+	fcirclestatistic.DefaultLastUpdatedTime = fcirclestatisticDescLastUpdatedTime.Default.(func() time.Time)
 	fileMixin := schema.File{}.Mixin()
 	fileMixinHooks0 := fileMixin[0].Hooks()
 	file.Hooks[0] = fileMixinHooks0[0]

@@ -30,16 +30,16 @@ type UpdateGiveMoneyParams struct {
 type GiveMoneyService interface {
 	// GetAllRecords gets all give money records (no authentication required)
 	GetAllRecords(ctx context.Context) ([]*model.GiveMoney, error)
-	
+
 	// GetRecordsByPage gets give money records with pagination (no authentication required)
 	GetRecordsByPage(ctx context.Context, page, pageSize int) (*repository.PageResult[model.GiveMoney], error)
-	
+
 	// CreateRecord creates a new give money record (authentication required)
 	CreateRecord(ctx context.Context, params CreateGiveMoneyParams) (*model.GiveMoney, error)
-	
+
 	// UpdateRecord updates an existing give money record (authentication required)
 	UpdateRecord(ctx context.Context, id uint, params UpdateGiveMoneyParams) (*model.GiveMoney, error)
-	
+
 	// DeleteRecord deletes a give money record (authentication required)
 	DeleteRecord(ctx context.Context, id uint) error
 }
@@ -71,12 +71,12 @@ func (s *giveMoneyService) CreateRecord(ctx context.Context, params CreateGiveMo
 		Nickname: params.Nickname,
 		Figure:   params.Figure,
 	}
-	
+
 	err := s.giveMoneyRepo.Create(ctx, giveMoney)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return giveMoney, nil
 }
 
@@ -87,16 +87,16 @@ func (s *giveMoneyService) UpdateRecord(ctx context.Context, id uint, params Upd
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Update the fields
 	existing.Nickname = params.Nickname
 	existing.Figure = params.Figure
-	
+
 	err = s.giveMoneyRepo.Update(ctx, existing)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return existing, nil
 }
 

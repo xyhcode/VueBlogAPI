@@ -20,7 +20,7 @@ func toModel(gm *ent.GiveMoney) *model.GiveMoney {
 	if gm == nil {
 		return nil
 	}
-	
+
 	return &model.GiveMoney{
 		ID:        gm.ID,
 		CreatedAt: gm.CreatedAt,
@@ -48,7 +48,7 @@ func (r *giveMoneyRepository) FindByID(ctx context.Context, id uint) (*model.Giv
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return toModel(giveMoney), nil
 }
 
@@ -58,17 +58,17 @@ func (r *giveMoneyRepository) Create(ctx context.Context, entity *model.GiveMone
 		SetNickname(entity.Nickname).
 		SetFigure(entity.Figure).
 		Save(ctx)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	// Update the entity with the created data
 	entity.ID = giveMoney.ID
 	entity.CreatedAt = giveMoney.CreatedAt
 	entity.UpdatedAt = giveMoney.UpdatedAt
 	entity.DeletedAt = giveMoney.DeletedAt
-	
+
 	return nil
 }
 
@@ -78,7 +78,7 @@ func (r *giveMoneyRepository) Update(ctx context.Context, entity *model.GiveMone
 		SetNickname(entity.Nickname).
 		SetFigure(entity.Figure).
 		Save(ctx)
-	
+
 	return err
 }
 
@@ -93,12 +93,12 @@ func (r *giveMoneyRepository) FindAll(ctx context.Context) ([]*model.GiveMoney, 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := make([]*model.GiveMoney, len(giveMonies))
 	for i, gm := range giveMonies {
 		result[i] = toModel(gm)
 	}
-	
+
 	return result, nil
 }
 
@@ -106,29 +106,29 @@ func (r *giveMoneyRepository) FindAll(ctx context.Context) ([]*model.GiveMoney, 
 func (r *giveMoneyRepository) FindListByPage(ctx context.Context, page, pageSize int) (*repository.PageResult[model.GiveMoney], error) {
 	// Calculate offset
 	offset := (page - 1) * pageSize
-	
+
 	// Get total count
 	total, err := r.client.GiveMoney.Query().Count(ctx)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Get paginated results
 	giveMonies, err := r.client.GiveMoney.Query().
 		Offset(offset).
 		Limit(pageSize).
 		All(ctx)
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert to model
 	items := make([]*model.GiveMoney, len(giveMonies))
 	for i, gm := range giveMonies {
 		items[i] = toModel(gm)
 	}
-	
+
 	return &repository.PageResult[model.GiveMoney]{
 		Items: items,
 		Total: int64(total),

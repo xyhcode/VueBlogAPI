@@ -23,6 +23,7 @@ import (
 	direct_link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/direct_link"
 	doc_series_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/doc_series"
 	essay_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/essay"
+	fcircle_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/fcircle"
 	file_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/file"
 	givemoney_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/givemoney"
 	link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/link"
@@ -96,6 +97,7 @@ type Router struct {
 	configImportExportHandler *config_handler.ConfigImportExportHandler
 	subscriberHandler         *subscriber_handler.Handler
 	captchaHandler            *captcha_handler.Handler
+	fcircleHandler            *fcircle_handler.Handler
 }
 
 // NewRouter 是 Router 的构造函数，通过依赖注入接收所有处理器。
@@ -133,6 +135,7 @@ func NewRouter(
 	configImportExportHandler *config_handler.ConfigImportExportHandler,
 	subscriberHandler *subscriber_handler.Handler,
 	captchaHandler *captcha_handler.Handler,
+	fcircleHandler *fcircle_handler.Handler,
 ) *Router {
 	return &Router{
 		authHandler:               authHandler,
@@ -168,6 +171,7 @@ func NewRouter(
 		configImportExportHandler: configImportExportHandler,
 		subscriberHandler:         subscriberHandler,
 		captchaHandler:            captchaHandler,
+		fcircleHandler:            fcircleHandler,
 	}
 }
 
@@ -221,6 +225,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 	r.registerConfigBackupRoutes(apiGroup)
 	r.registerGiveMoneyRoutes(apiGroup)
 	r.registerEssayRoutes(apiGroup)
+	r.registerFCircleRoutes(apiGroup)
 	r.registerSitemapRoutes(engine) // 直接注册到engine，不使用/api前缀
 }
 
@@ -882,5 +887,21 @@ func (r *Router) registerEssayRoutes(api *gin.RouterGroup) {
 
 		// 删除随笔记录: DELETE /api/essay/:id
 		essayAdmin.DELETE("/:id", r.essayHandler.DeleteEssay)
+	}
+}
+
+// registerFCircleRoutes 注册朋友圈相关路由
+func (r *Router) registerFCircleRoutes(api *gin.RouterGroup) {
+	// 朋友圈接口，不需要鉴权
+	fcircle := api.Group("/public/fcircle")
+	{
+		// 获取完整统计信息与文章列表: GET /api/fcircle/all
+		fcircle.GET("/all", r.fcircleHandler.ListAll)
+
+		// 获取随机文章: GET /api/fcircle/randompost
+		fcircle.GET("/randompost", r.fcircleHandler.GetRandomPost)
+
+		// 获取指定朋友文章列表: GET /api/fcircle/post
+		fcircle.GET("/post", r.fcircleHandler.GetFriendPosts)
 	}
 }

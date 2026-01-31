@@ -117,6 +117,30 @@ func (f EssayFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EssayMutation", m)
 }
 
+// The FCirclePostFunc type is an adapter to allow the use of ordinary
+// function as FCirclePost mutator.
+type FCirclePostFunc func(context.Context, *ent.FCirclePostMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FCirclePostFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FCirclePostMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FCirclePostMutation", m)
+}
+
+// The FCircleStatisticFunc type is an adapter to allow the use of ordinary
+// function as FCircleStatistic mutator.
+type FCircleStatisticFunc func(context.Context, *ent.FCircleStatisticMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FCircleStatisticFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FCircleStatisticMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FCircleStatisticMutation", m)
+}
+
 // The FileFunc type is an adapter to allow the use of ordinary
 // function as File mutator.
 type FileFunc func(context.Context, *ent.FileMutation) (ent.Value, error)

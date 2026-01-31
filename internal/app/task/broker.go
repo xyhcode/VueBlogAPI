@@ -19,6 +19,7 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/statistics"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/thumbnail"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/utility"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/robfig/cron/v3"
 )
@@ -41,6 +42,8 @@ type Broker struct {
 	settingSvc        setting.SettingService
 	statService       statistics.VisitorStatService
 	articleHistorySvc article_history_service.Service
+	db                *ent.Client
+	redis             *redis.Client
 }
 
 // NewBroker 是 Broker 的构造函数。
@@ -58,6 +61,8 @@ func NewBroker(
 	settingSvc setting.SettingService,
 	statService statistics.VisitorStatService,
 	articleHistorySvc article_history_service.Service,
+	db *ent.Client,
+	redis *redis.Client,
 ) *Broker {
 
 	slogHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
@@ -91,6 +96,8 @@ func NewBroker(
 		settingSvc:        settingSvc,
 		statService:       statService,
 		articleHistorySvc: articleHistorySvc,
+		db:                db,
+		redis:             redis,
 	}
 
 	broker.startWorkerPool()
@@ -197,6 +204,15 @@ func (b *Broker) RegisterCronJobs() {
 		b.logger.Info("-> Successfully registered 'ArticleHistoryCleanupJob'", "schedule", "every day at 3:30:00 AM")
 	}
 
+	// 添加朋友圈爬取任务 - 每6小时执行一次
+	fcircleCrawlJob := NewFCircleCrawlJob(b.logger, b.db, b.linkRepo, b.redis)
+	_, err = b.cron.AddJob("0 0 */6 * * *", fcircleCrawlJob) // 每6小时执行一次
+	if err != nil {
+		b.logger.Error("Failed to add 'FCircleCrawlJob'", slog.Any("error", err))
+		os.Exit(1)
+	}
+	b.logger.Info("-> Successfully registered 'FCircleCrawlJob'", "schedule", "every 6 hours")
+
 	b.logger.Info("All periodic jobs registered.")
 }
 
@@ -216,6 +232,34 @@ func (b *Broker) DispatchThumbnailGeneration(fileID uint) {
 func (b *Broker) Start() {
 	b.logger.Info("Task broker started.")
 	b.cron.Start()
+
+	go func() {
+		// 检查是否存在朋友圈数据
+		count, err := b.db.FCirclePost.Query().Count(context.Background())
+		b.logger.Info("检查朋友圈数据", slog.Int("count", count))
+		if err != nil {
+			b.logger.Error("检查朋友圈数据失败，将执行一次爬取", slog.Any("error", err))
+			// 检查失败时也执行爬取，确保有数据
+			fcircleCrawlJob := NewFCircleCrawlJob(b.logger, b.db, b.linkRepo, b.redis)
+			fcircleCrawlJob.Run()
+			return
+		}
+
+		if count == 0 {
+			b.logger.Info("未发现朋友圈数据，执行首次爬取")
+			fcircleCrawlJob := NewFCircleCrawlJob(b.logger, b.db, b.linkRepo, b.redis)
+			fcircleCrawlJob.Run()
+		} else {
+			b.logger.Info("发现已有朋友圈数据，跳过启动时爬取", slog.Int("count", count))
+		}
+	}()
+
+	// 启动时立即执行一次朋友圈爬取任务
+	//go func() {
+	//	b.logger.Info("手动触发朋友圈爬取任务")
+	//	fcircleCrawlJob := NewFCircleCrawlJob(b.logger, b.db, b.linkRepo, b.redis)
+	//	fcircleCrawlJob.Run()
+	//}()
 }
 
 // Stop 优雅地停止 cron 调度器和所有 worker。

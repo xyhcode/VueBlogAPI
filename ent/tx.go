@@ -30,6 +30,10 @@ type Tx struct {
 	Entity *EntityClient
 	// Essay is the client for interacting with the Essay builders.
 	Essay *EssayClient
+	// FCirclePost is the client for interacting with the FCirclePost builders.
+	FCirclePost *FCirclePostClient
+	// FCircleStatistic is the client for interacting with the FCircleStatistic builders.
+	FCircleStatistic *FCircleStatisticClient
 	// File is the client for interacting with the File builders.
 	File *FileClient
 	// FileEntity is the client for interacting with the FileEntity builders.
@@ -214,6 +218,8 @@ func (tx *Tx) init() {
 	tx.DocSeries = NewDocSeriesClient(tx.config)
 	tx.Entity = NewEntityClient(tx.config)
 	tx.Essay = NewEssayClient(tx.config)
+	tx.FCirclePost = NewFCirclePostClient(tx.config)
+	tx.FCircleStatistic = NewFCircleStatisticClient(tx.config)
 	tx.File = NewFileClient(tx.config)
 	tx.FileEntity = NewFileEntityClient(tx.config)
 	tx.GiveMoney = NewGiveMoneyClient(tx.config)

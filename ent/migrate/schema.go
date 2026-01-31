@@ -340,6 +340,42 @@ var (
 		Columns:    EssaysColumns,
 		PrimaryKey: []*schema.Column{EssaysColumns[0]},
 	}
+	// FcirclePostsColumns holds the columns for the "fcircle_posts" table.
+	FcirclePostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "title", Type: field.TypeString, Comment: "文章标题"},
+		{Name: "link", Type: field.TypeString, Unique: true, Comment: "文章链接"},
+		{Name: "created", Type: field.TypeTime, Nullable: true, Comment: "创建时间"},
+		{Name: "updated", Type: field.TypeTime, Nullable: true, Comment: "更新时间"},
+		{Name: "author", Type: field.TypeString, Comment: "作者名称"},
+		{Name: "avatar", Type: field.TypeString, Nullable: true, Comment: "作者头像链接"},
+		{Name: "friend_link", Type: field.TypeString, Comment: "友链用户网站链接"},
+		{Name: "crawled_at", Type: field.TypeTime, Comment: "爬取时间"},
+		{Name: "rules", Type: field.TypeString, Nullable: true, Comment: "使用的规则类型"},
+	}
+	// FcirclePostsTable holds the schema information for the "fcircle_posts" table.
+	FcirclePostsTable = &schema.Table{
+		Name:       "fcircle_posts",
+		Comment:    "朋友圈文章表",
+		Columns:    FcirclePostsColumns,
+		PrimaryKey: []*schema.Column{FcirclePostsColumns[0]},
+	}
+	// FcircleStatisticsColumns holds the columns for the "fcircle_statistics" table.
+	FcircleStatisticsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "friends_num", Type: field.TypeInt, Comment: "已收录的友链数量", Default: 0},
+		{Name: "active_num", Type: field.TypeInt, Comment: "正常运行的友链数量", Default: 0},
+		{Name: "error_num", Type: field.TypeInt, Comment: "异常/失效的友链数量", Default: 0},
+		{Name: "article_num", Type: field.TypeInt, Comment: "总文章数", Default: 0},
+		{Name: "last_updated_time", Type: field.TypeTime, Comment: "数据最后更新时间"},
+	}
+	// FcircleStatisticsTable holds the schema information for the "fcircle_statistics" table.
+	FcircleStatisticsTable = &schema.Table{
+		Name:       "fcircle_statistics",
+		Comment:    "朋友圈统计信息表",
+		Columns:    FcircleStatisticsColumns,
+		PrimaryKey: []*schema.Column{FcircleStatisticsColumns[0]},
+	}
 	// FilesColumns holds the columns for the "files" table.
 	FilesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint, Increment: true},
@@ -1063,6 +1099,8 @@ var (
 		DocSeriesTable,
 		EntitiesTable,
 		EssaysTable,
+		FcirclePostsTable,
+		FcircleStatisticsTable,
 		FilesTable,
 		FileEntitiesTable,
 		GiveMoneysTable,

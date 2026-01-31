@@ -20,6 +20,8 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/ent/docseries"
 	"github.com/anzhiyu-c/anheyu-app/ent/entity"
 	"github.com/anzhiyu-c/anheyu-app/ent/essay"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclepost"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclestatistic"
 	"github.com/anzhiyu-c/anheyu-app/ent/file"
 	"github.com/anzhiyu-c/anheyu-app/ent/fileentity"
 	"github.com/anzhiyu-c/anheyu-app/ent/givemoney"
@@ -64,6 +66,8 @@ const (
 	TypeDocSeries              = "DocSeries"
 	TypeEntity                 = "Entity"
 	TypeEssay                  = "Essay"
+	TypeFCirclePost            = "FCirclePost"
+	TypeFCircleStatistic       = "FCircleStatistic"
 	TypeFile                   = "File"
 	TypeFileEntity             = "FileEntity"
 	TypeGiveMoney              = "GiveMoney"
@@ -13646,6 +13650,1520 @@ func (m *EssayMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *EssayMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Essay edge %s", name)
+}
+
+// FCirclePostMutation represents an operation that mutates the FCirclePost nodes in the graph.
+type FCirclePostMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	title         *string
+	link          *string
+	created       *time.Time
+	updated       *time.Time
+	author        *string
+	avatar        *string
+	friend_link   *string
+	crawled_at    *time.Time
+	rules         *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*FCirclePost, error)
+	predicates    []predicate.FCirclePost
+}
+
+var _ ent.Mutation = (*FCirclePostMutation)(nil)
+
+// fcirclepostOption allows management of the mutation configuration using functional options.
+type fcirclepostOption func(*FCirclePostMutation)
+
+// newFCirclePostMutation creates new mutation for the FCirclePost entity.
+func newFCirclePostMutation(c config, op Op, opts ...fcirclepostOption) *FCirclePostMutation {
+	m := &FCirclePostMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeFCirclePost,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withFCirclePostID sets the ID field of the mutation.
+func withFCirclePostID(id int) fcirclepostOption {
+	return func(m *FCirclePostMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *FCirclePost
+		)
+		m.oldValue = func(ctx context.Context) (*FCirclePost, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().FCirclePost.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withFCirclePost sets the old FCirclePost of the mutation.
+func withFCirclePost(node *FCirclePost) fcirclepostOption {
+	return func(m *FCirclePostMutation) {
+		m.oldValue = func(context.Context) (*FCirclePost, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m FCirclePostMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m FCirclePostMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *FCirclePostMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *FCirclePostMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().FCirclePost.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *FCirclePostMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *FCirclePostMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *FCirclePostMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetLink sets the "link" field.
+func (m *FCirclePostMutation) SetLink(s string) {
+	m.link = &s
+}
+
+// Link returns the value of the "link" field in the mutation.
+func (m *FCirclePostMutation) Link() (r string, exists bool) {
+	v := m.link
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLink returns the old "link" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldLink(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLink is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLink requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLink: %w", err)
+	}
+	return oldValue.Link, nil
+}
+
+// ResetLink resets all changes to the "link" field.
+func (m *FCirclePostMutation) ResetLink() {
+	m.link = nil
+}
+
+// SetCreated sets the "created" field.
+func (m *FCirclePostMutation) SetCreated(t time.Time) {
+	m.created = &t
+}
+
+// Created returns the value of the "created" field in the mutation.
+func (m *FCirclePostMutation) Created() (r time.Time, exists bool) {
+	v := m.created
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreated returns the old "created" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldCreated(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreated: %w", err)
+	}
+	return oldValue.Created, nil
+}
+
+// ClearCreated clears the value of the "created" field.
+func (m *FCirclePostMutation) ClearCreated() {
+	m.created = nil
+	m.clearedFields[fcirclepost.FieldCreated] = struct{}{}
+}
+
+// CreatedCleared returns if the "created" field was cleared in this mutation.
+func (m *FCirclePostMutation) CreatedCleared() bool {
+	_, ok := m.clearedFields[fcirclepost.FieldCreated]
+	return ok
+}
+
+// ResetCreated resets all changes to the "created" field.
+func (m *FCirclePostMutation) ResetCreated() {
+	m.created = nil
+	delete(m.clearedFields, fcirclepost.FieldCreated)
+}
+
+// SetUpdated sets the "updated" field.
+func (m *FCirclePostMutation) SetUpdated(t time.Time) {
+	m.updated = &t
+}
+
+// Updated returns the value of the "updated" field in the mutation.
+func (m *FCirclePostMutation) Updated() (r time.Time, exists bool) {
+	v := m.updated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdated returns the old "updated" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldUpdated(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdated: %w", err)
+	}
+	return oldValue.Updated, nil
+}
+
+// ClearUpdated clears the value of the "updated" field.
+func (m *FCirclePostMutation) ClearUpdated() {
+	m.updated = nil
+	m.clearedFields[fcirclepost.FieldUpdated] = struct{}{}
+}
+
+// UpdatedCleared returns if the "updated" field was cleared in this mutation.
+func (m *FCirclePostMutation) UpdatedCleared() bool {
+	_, ok := m.clearedFields[fcirclepost.FieldUpdated]
+	return ok
+}
+
+// ResetUpdated resets all changes to the "updated" field.
+func (m *FCirclePostMutation) ResetUpdated() {
+	m.updated = nil
+	delete(m.clearedFields, fcirclepost.FieldUpdated)
+}
+
+// SetAuthor sets the "author" field.
+func (m *FCirclePostMutation) SetAuthor(s string) {
+	m.author = &s
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *FCirclePostMutation) Author() (r string, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldAuthor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *FCirclePostMutation) ResetAuthor() {
+	m.author = nil
+}
+
+// SetAvatar sets the "avatar" field.
+func (m *FCirclePostMutation) SetAvatar(s string) {
+	m.avatar = &s
+}
+
+// Avatar returns the value of the "avatar" field in the mutation.
+func (m *FCirclePostMutation) Avatar() (r string, exists bool) {
+	v := m.avatar
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvatar returns the old "avatar" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldAvatar(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAvatar is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAvatar requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvatar: %w", err)
+	}
+	return oldValue.Avatar, nil
+}
+
+// ClearAvatar clears the value of the "avatar" field.
+func (m *FCirclePostMutation) ClearAvatar() {
+	m.avatar = nil
+	m.clearedFields[fcirclepost.FieldAvatar] = struct{}{}
+}
+
+// AvatarCleared returns if the "avatar" field was cleared in this mutation.
+func (m *FCirclePostMutation) AvatarCleared() bool {
+	_, ok := m.clearedFields[fcirclepost.FieldAvatar]
+	return ok
+}
+
+// ResetAvatar resets all changes to the "avatar" field.
+func (m *FCirclePostMutation) ResetAvatar() {
+	m.avatar = nil
+	delete(m.clearedFields, fcirclepost.FieldAvatar)
+}
+
+// SetFriendLink sets the "friend_link" field.
+func (m *FCirclePostMutation) SetFriendLink(s string) {
+	m.friend_link = &s
+}
+
+// FriendLink returns the value of the "friend_link" field in the mutation.
+func (m *FCirclePostMutation) FriendLink() (r string, exists bool) {
+	v := m.friend_link
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFriendLink returns the old "friend_link" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldFriendLink(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFriendLink is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFriendLink requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFriendLink: %w", err)
+	}
+	return oldValue.FriendLink, nil
+}
+
+// ResetFriendLink resets all changes to the "friend_link" field.
+func (m *FCirclePostMutation) ResetFriendLink() {
+	m.friend_link = nil
+}
+
+// SetCrawledAt sets the "crawled_at" field.
+func (m *FCirclePostMutation) SetCrawledAt(t time.Time) {
+	m.crawled_at = &t
+}
+
+// CrawledAt returns the value of the "crawled_at" field in the mutation.
+func (m *FCirclePostMutation) CrawledAt() (r time.Time, exists bool) {
+	v := m.crawled_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCrawledAt returns the old "crawled_at" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldCrawledAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCrawledAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCrawledAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCrawledAt: %w", err)
+	}
+	return oldValue.CrawledAt, nil
+}
+
+// ResetCrawledAt resets all changes to the "crawled_at" field.
+func (m *FCirclePostMutation) ResetCrawledAt() {
+	m.crawled_at = nil
+}
+
+// SetRules sets the "rules" field.
+func (m *FCirclePostMutation) SetRules(s string) {
+	m.rules = &s
+}
+
+// Rules returns the value of the "rules" field in the mutation.
+func (m *FCirclePostMutation) Rules() (r string, exists bool) {
+	v := m.rules
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRules returns the old "rules" field's value of the FCirclePost entity.
+// If the FCirclePost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCirclePostMutation) OldRules(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRules is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRules requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRules: %w", err)
+	}
+	return oldValue.Rules, nil
+}
+
+// ClearRules clears the value of the "rules" field.
+func (m *FCirclePostMutation) ClearRules() {
+	m.rules = nil
+	m.clearedFields[fcirclepost.FieldRules] = struct{}{}
+}
+
+// RulesCleared returns if the "rules" field was cleared in this mutation.
+func (m *FCirclePostMutation) RulesCleared() bool {
+	_, ok := m.clearedFields[fcirclepost.FieldRules]
+	return ok
+}
+
+// ResetRules resets all changes to the "rules" field.
+func (m *FCirclePostMutation) ResetRules() {
+	m.rules = nil
+	delete(m.clearedFields, fcirclepost.FieldRules)
+}
+
+// Where appends a list predicates to the FCirclePostMutation builder.
+func (m *FCirclePostMutation) Where(ps ...predicate.FCirclePost) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the FCirclePostMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *FCirclePostMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.FCirclePost, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *FCirclePostMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *FCirclePostMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (FCirclePost).
+func (m *FCirclePostMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *FCirclePostMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.title != nil {
+		fields = append(fields, fcirclepost.FieldTitle)
+	}
+	if m.link != nil {
+		fields = append(fields, fcirclepost.FieldLink)
+	}
+	if m.created != nil {
+		fields = append(fields, fcirclepost.FieldCreated)
+	}
+	if m.updated != nil {
+		fields = append(fields, fcirclepost.FieldUpdated)
+	}
+	if m.author != nil {
+		fields = append(fields, fcirclepost.FieldAuthor)
+	}
+	if m.avatar != nil {
+		fields = append(fields, fcirclepost.FieldAvatar)
+	}
+	if m.friend_link != nil {
+		fields = append(fields, fcirclepost.FieldFriendLink)
+	}
+	if m.crawled_at != nil {
+		fields = append(fields, fcirclepost.FieldCrawledAt)
+	}
+	if m.rules != nil {
+		fields = append(fields, fcirclepost.FieldRules)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *FCirclePostMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case fcirclepost.FieldTitle:
+		return m.Title()
+	case fcirclepost.FieldLink:
+		return m.Link()
+	case fcirclepost.FieldCreated:
+		return m.Created()
+	case fcirclepost.FieldUpdated:
+		return m.Updated()
+	case fcirclepost.FieldAuthor:
+		return m.Author()
+	case fcirclepost.FieldAvatar:
+		return m.Avatar()
+	case fcirclepost.FieldFriendLink:
+		return m.FriendLink()
+	case fcirclepost.FieldCrawledAt:
+		return m.CrawledAt()
+	case fcirclepost.FieldRules:
+		return m.Rules()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *FCirclePostMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case fcirclepost.FieldTitle:
+		return m.OldTitle(ctx)
+	case fcirclepost.FieldLink:
+		return m.OldLink(ctx)
+	case fcirclepost.FieldCreated:
+		return m.OldCreated(ctx)
+	case fcirclepost.FieldUpdated:
+		return m.OldUpdated(ctx)
+	case fcirclepost.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case fcirclepost.FieldAvatar:
+		return m.OldAvatar(ctx)
+	case fcirclepost.FieldFriendLink:
+		return m.OldFriendLink(ctx)
+	case fcirclepost.FieldCrawledAt:
+		return m.OldCrawledAt(ctx)
+	case fcirclepost.FieldRules:
+		return m.OldRules(ctx)
+	}
+	return nil, fmt.Errorf("unknown FCirclePost field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FCirclePostMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case fcirclepost.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case fcirclepost.FieldLink:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLink(v)
+		return nil
+	case fcirclepost.FieldCreated:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreated(v)
+		return nil
+	case fcirclepost.FieldUpdated:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdated(v)
+		return nil
+	case fcirclepost.FieldAuthor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case fcirclepost.FieldAvatar:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvatar(v)
+		return nil
+	case fcirclepost.FieldFriendLink:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFriendLink(v)
+		return nil
+	case fcirclepost.FieldCrawledAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCrawledAt(v)
+		return nil
+	case fcirclepost.FieldRules:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRules(v)
+		return nil
+	}
+	return fmt.Errorf("unknown FCirclePost field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *FCirclePostMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *FCirclePostMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FCirclePostMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown FCirclePost numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *FCirclePostMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(fcirclepost.FieldCreated) {
+		fields = append(fields, fcirclepost.FieldCreated)
+	}
+	if m.FieldCleared(fcirclepost.FieldUpdated) {
+		fields = append(fields, fcirclepost.FieldUpdated)
+	}
+	if m.FieldCleared(fcirclepost.FieldAvatar) {
+		fields = append(fields, fcirclepost.FieldAvatar)
+	}
+	if m.FieldCleared(fcirclepost.FieldRules) {
+		fields = append(fields, fcirclepost.FieldRules)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *FCirclePostMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *FCirclePostMutation) ClearField(name string) error {
+	switch name {
+	case fcirclepost.FieldCreated:
+		m.ClearCreated()
+		return nil
+	case fcirclepost.FieldUpdated:
+		m.ClearUpdated()
+		return nil
+	case fcirclepost.FieldAvatar:
+		m.ClearAvatar()
+		return nil
+	case fcirclepost.FieldRules:
+		m.ClearRules()
+		return nil
+	}
+	return fmt.Errorf("unknown FCirclePost nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *FCirclePostMutation) ResetField(name string) error {
+	switch name {
+	case fcirclepost.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case fcirclepost.FieldLink:
+		m.ResetLink()
+		return nil
+	case fcirclepost.FieldCreated:
+		m.ResetCreated()
+		return nil
+	case fcirclepost.FieldUpdated:
+		m.ResetUpdated()
+		return nil
+	case fcirclepost.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case fcirclepost.FieldAvatar:
+		m.ResetAvatar()
+		return nil
+	case fcirclepost.FieldFriendLink:
+		m.ResetFriendLink()
+		return nil
+	case fcirclepost.FieldCrawledAt:
+		m.ResetCrawledAt()
+		return nil
+	case fcirclepost.FieldRules:
+		m.ResetRules()
+		return nil
+	}
+	return fmt.Errorf("unknown FCirclePost field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *FCirclePostMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *FCirclePostMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *FCirclePostMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *FCirclePostMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *FCirclePostMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *FCirclePostMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *FCirclePostMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown FCirclePost unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *FCirclePostMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown FCirclePost edge %s", name)
+}
+
+// FCircleStatisticMutation represents an operation that mutates the FCircleStatistic nodes in the graph.
+type FCircleStatisticMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	friends_num       *int
+	addfriends_num    *int
+	active_num        *int
+	addactive_num     *int
+	error_num         *int
+	adderror_num      *int
+	article_num       *int
+	addarticle_num    *int
+	last_updated_time *time.Time
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*FCircleStatistic, error)
+	predicates        []predicate.FCircleStatistic
+}
+
+var _ ent.Mutation = (*FCircleStatisticMutation)(nil)
+
+// fcirclestatisticOption allows management of the mutation configuration using functional options.
+type fcirclestatisticOption func(*FCircleStatisticMutation)
+
+// newFCircleStatisticMutation creates new mutation for the FCircleStatistic entity.
+func newFCircleStatisticMutation(c config, op Op, opts ...fcirclestatisticOption) *FCircleStatisticMutation {
+	m := &FCircleStatisticMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeFCircleStatistic,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withFCircleStatisticID sets the ID field of the mutation.
+func withFCircleStatisticID(id int) fcirclestatisticOption {
+	return func(m *FCircleStatisticMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *FCircleStatistic
+		)
+		m.oldValue = func(ctx context.Context) (*FCircleStatistic, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().FCircleStatistic.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withFCircleStatistic sets the old FCircleStatistic of the mutation.
+func withFCircleStatistic(node *FCircleStatistic) fcirclestatisticOption {
+	return func(m *FCircleStatisticMutation) {
+		m.oldValue = func(context.Context) (*FCircleStatistic, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m FCircleStatisticMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m FCircleStatisticMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *FCircleStatisticMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *FCircleStatisticMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().FCircleStatistic.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetFriendsNum sets the "friends_num" field.
+func (m *FCircleStatisticMutation) SetFriendsNum(i int) {
+	m.friends_num = &i
+	m.addfriends_num = nil
+}
+
+// FriendsNum returns the value of the "friends_num" field in the mutation.
+func (m *FCircleStatisticMutation) FriendsNum() (r int, exists bool) {
+	v := m.friends_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFriendsNum returns the old "friends_num" field's value of the FCircleStatistic entity.
+// If the FCircleStatistic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCircleStatisticMutation) OldFriendsNum(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFriendsNum is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFriendsNum requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFriendsNum: %w", err)
+	}
+	return oldValue.FriendsNum, nil
+}
+
+// AddFriendsNum adds i to the "friends_num" field.
+func (m *FCircleStatisticMutation) AddFriendsNum(i int) {
+	if m.addfriends_num != nil {
+		*m.addfriends_num += i
+	} else {
+		m.addfriends_num = &i
+	}
+}
+
+// AddedFriendsNum returns the value that was added to the "friends_num" field in this mutation.
+func (m *FCircleStatisticMutation) AddedFriendsNum() (r int, exists bool) {
+	v := m.addfriends_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetFriendsNum resets all changes to the "friends_num" field.
+func (m *FCircleStatisticMutation) ResetFriendsNum() {
+	m.friends_num = nil
+	m.addfriends_num = nil
+}
+
+// SetActiveNum sets the "active_num" field.
+func (m *FCircleStatisticMutation) SetActiveNum(i int) {
+	m.active_num = &i
+	m.addactive_num = nil
+}
+
+// ActiveNum returns the value of the "active_num" field in the mutation.
+func (m *FCircleStatisticMutation) ActiveNum() (r int, exists bool) {
+	v := m.active_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActiveNum returns the old "active_num" field's value of the FCircleStatistic entity.
+// If the FCircleStatistic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCircleStatisticMutation) OldActiveNum(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActiveNum is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActiveNum requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActiveNum: %w", err)
+	}
+	return oldValue.ActiveNum, nil
+}
+
+// AddActiveNum adds i to the "active_num" field.
+func (m *FCircleStatisticMutation) AddActiveNum(i int) {
+	if m.addactive_num != nil {
+		*m.addactive_num += i
+	} else {
+		m.addactive_num = &i
+	}
+}
+
+// AddedActiveNum returns the value that was added to the "active_num" field in this mutation.
+func (m *FCircleStatisticMutation) AddedActiveNum() (r int, exists bool) {
+	v := m.addactive_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetActiveNum resets all changes to the "active_num" field.
+func (m *FCircleStatisticMutation) ResetActiveNum() {
+	m.active_num = nil
+	m.addactive_num = nil
+}
+
+// SetErrorNum sets the "error_num" field.
+func (m *FCircleStatisticMutation) SetErrorNum(i int) {
+	m.error_num = &i
+	m.adderror_num = nil
+}
+
+// ErrorNum returns the value of the "error_num" field in the mutation.
+func (m *FCircleStatisticMutation) ErrorNum() (r int, exists bool) {
+	v := m.error_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldErrorNum returns the old "error_num" field's value of the FCircleStatistic entity.
+// If the FCircleStatistic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCircleStatisticMutation) OldErrorNum(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldErrorNum is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldErrorNum requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldErrorNum: %w", err)
+	}
+	return oldValue.ErrorNum, nil
+}
+
+// AddErrorNum adds i to the "error_num" field.
+func (m *FCircleStatisticMutation) AddErrorNum(i int) {
+	if m.adderror_num != nil {
+		*m.adderror_num += i
+	} else {
+		m.adderror_num = &i
+	}
+}
+
+// AddedErrorNum returns the value that was added to the "error_num" field in this mutation.
+func (m *FCircleStatisticMutation) AddedErrorNum() (r int, exists bool) {
+	v := m.adderror_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetErrorNum resets all changes to the "error_num" field.
+func (m *FCircleStatisticMutation) ResetErrorNum() {
+	m.error_num = nil
+	m.adderror_num = nil
+}
+
+// SetArticleNum sets the "article_num" field.
+func (m *FCircleStatisticMutation) SetArticleNum(i int) {
+	m.article_num = &i
+	m.addarticle_num = nil
+}
+
+// ArticleNum returns the value of the "article_num" field in the mutation.
+func (m *FCircleStatisticMutation) ArticleNum() (r int, exists bool) {
+	v := m.article_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArticleNum returns the old "article_num" field's value of the FCircleStatistic entity.
+// If the FCircleStatistic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCircleStatisticMutation) OldArticleNum(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArticleNum is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArticleNum requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArticleNum: %w", err)
+	}
+	return oldValue.ArticleNum, nil
+}
+
+// AddArticleNum adds i to the "article_num" field.
+func (m *FCircleStatisticMutation) AddArticleNum(i int) {
+	if m.addarticle_num != nil {
+		*m.addarticle_num += i
+	} else {
+		m.addarticle_num = &i
+	}
+}
+
+// AddedArticleNum returns the value that was added to the "article_num" field in this mutation.
+func (m *FCircleStatisticMutation) AddedArticleNum() (r int, exists bool) {
+	v := m.addarticle_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetArticleNum resets all changes to the "article_num" field.
+func (m *FCircleStatisticMutation) ResetArticleNum() {
+	m.article_num = nil
+	m.addarticle_num = nil
+}
+
+// SetLastUpdatedTime sets the "last_updated_time" field.
+func (m *FCircleStatisticMutation) SetLastUpdatedTime(t time.Time) {
+	m.last_updated_time = &t
+}
+
+// LastUpdatedTime returns the value of the "last_updated_time" field in the mutation.
+func (m *FCircleStatisticMutation) LastUpdatedTime() (r time.Time, exists bool) {
+	v := m.last_updated_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUpdatedTime returns the old "last_updated_time" field's value of the FCircleStatistic entity.
+// If the FCircleStatistic object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FCircleStatisticMutation) OldLastUpdatedTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUpdatedTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUpdatedTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUpdatedTime: %w", err)
+	}
+	return oldValue.LastUpdatedTime, nil
+}
+
+// ResetLastUpdatedTime resets all changes to the "last_updated_time" field.
+func (m *FCircleStatisticMutation) ResetLastUpdatedTime() {
+	m.last_updated_time = nil
+}
+
+// Where appends a list predicates to the FCircleStatisticMutation builder.
+func (m *FCircleStatisticMutation) Where(ps ...predicate.FCircleStatistic) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the FCircleStatisticMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *FCircleStatisticMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.FCircleStatistic, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *FCircleStatisticMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *FCircleStatisticMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (FCircleStatistic).
+func (m *FCircleStatisticMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *FCircleStatisticMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.friends_num != nil {
+		fields = append(fields, fcirclestatistic.FieldFriendsNum)
+	}
+	if m.active_num != nil {
+		fields = append(fields, fcirclestatistic.FieldActiveNum)
+	}
+	if m.error_num != nil {
+		fields = append(fields, fcirclestatistic.FieldErrorNum)
+	}
+	if m.article_num != nil {
+		fields = append(fields, fcirclestatistic.FieldArticleNum)
+	}
+	if m.last_updated_time != nil {
+		fields = append(fields, fcirclestatistic.FieldLastUpdatedTime)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *FCircleStatisticMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		return m.FriendsNum()
+	case fcirclestatistic.FieldActiveNum:
+		return m.ActiveNum()
+	case fcirclestatistic.FieldErrorNum:
+		return m.ErrorNum()
+	case fcirclestatistic.FieldArticleNum:
+		return m.ArticleNum()
+	case fcirclestatistic.FieldLastUpdatedTime:
+		return m.LastUpdatedTime()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *FCircleStatisticMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		return m.OldFriendsNum(ctx)
+	case fcirclestatistic.FieldActiveNum:
+		return m.OldActiveNum(ctx)
+	case fcirclestatistic.FieldErrorNum:
+		return m.OldErrorNum(ctx)
+	case fcirclestatistic.FieldArticleNum:
+		return m.OldArticleNum(ctx)
+	case fcirclestatistic.FieldLastUpdatedTime:
+		return m.OldLastUpdatedTime(ctx)
+	}
+	return nil, fmt.Errorf("unknown FCircleStatistic field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FCircleStatisticMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFriendsNum(v)
+		return nil
+	case fcirclestatistic.FieldActiveNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActiveNum(v)
+		return nil
+	case fcirclestatistic.FieldErrorNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetErrorNum(v)
+		return nil
+	case fcirclestatistic.FieldArticleNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArticleNum(v)
+		return nil
+	case fcirclestatistic.FieldLastUpdatedTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUpdatedTime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown FCircleStatistic field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *FCircleStatisticMutation) AddedFields() []string {
+	var fields []string
+	if m.addfriends_num != nil {
+		fields = append(fields, fcirclestatistic.FieldFriendsNum)
+	}
+	if m.addactive_num != nil {
+		fields = append(fields, fcirclestatistic.FieldActiveNum)
+	}
+	if m.adderror_num != nil {
+		fields = append(fields, fcirclestatistic.FieldErrorNum)
+	}
+	if m.addarticle_num != nil {
+		fields = append(fields, fcirclestatistic.FieldArticleNum)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *FCircleStatisticMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		return m.AddedFriendsNum()
+	case fcirclestatistic.FieldActiveNum:
+		return m.AddedActiveNum()
+	case fcirclestatistic.FieldErrorNum:
+		return m.AddedErrorNum()
+	case fcirclestatistic.FieldArticleNum:
+		return m.AddedArticleNum()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *FCircleStatisticMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddFriendsNum(v)
+		return nil
+	case fcirclestatistic.FieldActiveNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddActiveNum(v)
+		return nil
+	case fcirclestatistic.FieldErrorNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddErrorNum(v)
+		return nil
+	case fcirclestatistic.FieldArticleNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddArticleNum(v)
+		return nil
+	}
+	return fmt.Errorf("unknown FCircleStatistic numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *FCircleStatisticMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *FCircleStatisticMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *FCircleStatisticMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown FCircleStatistic nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *FCircleStatisticMutation) ResetField(name string) error {
+	switch name {
+	case fcirclestatistic.FieldFriendsNum:
+		m.ResetFriendsNum()
+		return nil
+	case fcirclestatistic.FieldActiveNum:
+		m.ResetActiveNum()
+		return nil
+	case fcirclestatistic.FieldErrorNum:
+		m.ResetErrorNum()
+		return nil
+	case fcirclestatistic.FieldArticleNum:
+		m.ResetArticleNum()
+		return nil
+	case fcirclestatistic.FieldLastUpdatedTime:
+		m.ResetLastUpdatedTime()
+		return nil
+	}
+	return fmt.Errorf("unknown FCircleStatistic field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *FCircleStatisticMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *FCircleStatisticMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *FCircleStatisticMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *FCircleStatisticMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *FCircleStatisticMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *FCircleStatisticMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *FCircleStatisticMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown FCircleStatistic unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *FCircleStatisticMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown FCircleStatistic edge %s", name)
 }
 
 // FileMutation represents an operation that mutates the File nodes in the graph.

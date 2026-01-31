@@ -8,9 +8,9 @@
 package model
 
 import (
-	"github.com/anzhiyu-c/anheyu-app/internal/pkg/types"
 	"database/sql" // 导入 database/sql 用于 sql.NullString
-	"time"         // 导入 time 包
+	"github.com/anzhiyu-c/anheyu-app/internal/pkg/types"
+	"time" // 导入 time 包
 )
 
 // FileStorageVersion 是文件版本管理的领域模型。

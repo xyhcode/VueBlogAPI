@@ -33,6 +33,12 @@ type Entity func(*sql.Selector)
 // Essay is the predicate function for essay builders.
 type Essay func(*sql.Selector)
 
+// FCirclePost is the predicate function for fcirclepost builders.
+type FCirclePost func(*sql.Selector)
+
+// FCircleStatistic is the predicate function for fcirclestatistic builders.
+type FCircleStatistic func(*sql.Selector)
+
 // File is the predicate function for file builders.
 type File func(*sql.Selector)
 

@@ -24,6 +24,8 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/ent/docseries"
 	"github.com/anzhiyu-c/anheyu-app/ent/entity"
 	"github.com/anzhiyu-c/anheyu-app/ent/essay"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclepost"
+	"github.com/anzhiyu-c/anheyu-app/ent/fcirclestatistic"
 	"github.com/anzhiyu-c/anheyu-app/ent/file"
 	"github.com/anzhiyu-c/anheyu-app/ent/fileentity"
 	"github.com/anzhiyu-c/anheyu-app/ent/givemoney"
@@ -71,6 +73,10 @@ type Client struct {
 	Entity *EntityClient
 	// Essay is the client for interacting with the Essay builders.
 	Essay *EssayClient
+	// FCirclePost is the client for interacting with the FCirclePost builders.
+	FCirclePost *FCirclePostClient
+	// FCircleStatistic is the client for interacting with the FCircleStatistic builders.
+	FCircleStatistic *FCircleStatisticClient
 	// File is the client for interacting with the File builders.
 	File *FileClient
 	// FileEntity is the client for interacting with the FileEntity builders.
@@ -135,6 +141,8 @@ func (c *Client) init() {
 	c.DocSeries = NewDocSeriesClient(c.config)
 	c.Entity = NewEntityClient(c.config)
 	c.Essay = NewEssayClient(c.config)
+	c.FCirclePost = NewFCirclePostClient(c.config)
+	c.FCircleStatistic = NewFCircleStatisticClient(c.config)
 	c.File = NewFileClient(c.config)
 	c.FileEntity = NewFileEntityClient(c.config)
 	c.GiveMoney = NewGiveMoneyClient(c.config)
@@ -258,6 +266,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DocSeries:              NewDocSeriesClient(cfg),
 		Entity:                 NewEntityClient(cfg),
 		Essay:                  NewEssayClient(cfg),
+		FCirclePost:            NewFCirclePostClient(cfg),
+		FCircleStatistic:       NewFCircleStatisticClient(cfg),
 		File:                   NewFileClient(cfg),
 		FileEntity:             NewFileEntityClient(cfg),
 		GiveMoney:              NewGiveMoneyClient(cfg),
@@ -308,6 +318,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DocSeries:              NewDocSeriesClient(cfg),
 		Entity:                 NewEntityClient(cfg),
 		Essay:                  NewEssayClient(cfg),
+		FCirclePost:            NewFCirclePostClient(cfg),
+		FCircleStatistic:       NewFCircleStatisticClient(cfg),
 		File:                   NewFileClient(cfg),
 		FileEntity:             NewFileEntityClient(cfg),
 		GiveMoney:              NewGiveMoneyClient(cfg),
@@ -360,11 +372,11 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Album, c.AlbumCategory, c.Article, c.ArticleHistory, c.Comment, c.DirectLink,
-		c.DocSeries, c.Entity, c.Essay, c.File, c.FileEntity, c.GiveMoney, c.Link,
-		c.LinkCategory, c.LinkTag, c.Metadata, c.NotificationType, c.Page,
-		c.PostCategory, c.PostTag, c.Setting, c.StoragePolicy, c.Subscriber, c.Tag,
-		c.URLStat, c.User, c.UserGroup, c.UserInstalledTheme, c.UserNotificationConfig,
-		c.VisitorLog, c.VisitorStat,
+		c.DocSeries, c.Entity, c.Essay, c.FCirclePost, c.FCircleStatistic, c.File,
+		c.FileEntity, c.GiveMoney, c.Link, c.LinkCategory, c.LinkTag, c.Metadata,
+		c.NotificationType, c.Page, c.PostCategory, c.PostTag, c.Setting,
+		c.StoragePolicy, c.Subscriber, c.Tag, c.URLStat, c.User, c.UserGroup,
+		c.UserInstalledTheme, c.UserNotificationConfig, c.VisitorLog, c.VisitorStat,
 	} {
 		n.Use(hooks...)
 	}
@@ -375,11 +387,11 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Album, c.AlbumCategory, c.Article, c.ArticleHistory, c.Comment, c.DirectLink,
-		c.DocSeries, c.Entity, c.Essay, c.File, c.FileEntity, c.GiveMoney, c.Link,
-		c.LinkCategory, c.LinkTag, c.Metadata, c.NotificationType, c.Page,
-		c.PostCategory, c.PostTag, c.Setting, c.StoragePolicy, c.Subscriber, c.Tag,
-		c.URLStat, c.User, c.UserGroup, c.UserInstalledTheme, c.UserNotificationConfig,
-		c.VisitorLog, c.VisitorStat,
+		c.DocSeries, c.Entity, c.Essay, c.FCirclePost, c.FCircleStatistic, c.File,
+		c.FileEntity, c.GiveMoney, c.Link, c.LinkCategory, c.LinkTag, c.Metadata,
+		c.NotificationType, c.Page, c.PostCategory, c.PostTag, c.Setting,
+		c.StoragePolicy, c.Subscriber, c.Tag, c.URLStat, c.User, c.UserGroup,
+		c.UserInstalledTheme, c.UserNotificationConfig, c.VisitorLog, c.VisitorStat,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -406,6 +418,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Entity.mutate(ctx, m)
 	case *EssayMutation:
 		return c.Essay.mutate(ctx, m)
+	case *FCirclePostMutation:
+		return c.FCirclePost.mutate(ctx, m)
+	case *FCircleStatisticMutation:
+		return c.FCircleStatistic.mutate(ctx, m)
 	case *FileMutation:
 		return c.File.mutate(ctx, m)
 	case *FileEntityMutation:
@@ -1878,6 +1894,272 @@ func (c *EssayClient) mutate(ctx context.Context, m *EssayMutation) (Value, erro
 		return (&EssayDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Essay mutation op: %q", m.Op())
+	}
+}
+
+// FCirclePostClient is a client for the FCirclePost schema.
+type FCirclePostClient struct {
+	config
+}
+
+// NewFCirclePostClient returns a client for the FCirclePost from the given config.
+func NewFCirclePostClient(c config) *FCirclePostClient {
+	return &FCirclePostClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `fcirclepost.Hooks(f(g(h())))`.
+func (c *FCirclePostClient) Use(hooks ...Hook) {
+	c.hooks.FCirclePost = append(c.hooks.FCirclePost, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `fcirclepost.Intercept(f(g(h())))`.
+func (c *FCirclePostClient) Intercept(interceptors ...Interceptor) {
+	c.inters.FCirclePost = append(c.inters.FCirclePost, interceptors...)
+}
+
+// Create returns a builder for creating a FCirclePost entity.
+func (c *FCirclePostClient) Create() *FCirclePostCreate {
+	mutation := newFCirclePostMutation(c.config, OpCreate)
+	return &FCirclePostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of FCirclePost entities.
+func (c *FCirclePostClient) CreateBulk(builders ...*FCirclePostCreate) *FCirclePostCreateBulk {
+	return &FCirclePostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *FCirclePostClient) MapCreateBulk(slice any, setFunc func(*FCirclePostCreate, int)) *FCirclePostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &FCirclePostCreateBulk{err: fmt.Errorf("calling to FCirclePostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*FCirclePostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &FCirclePostCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for FCirclePost.
+func (c *FCirclePostClient) Update() *FCirclePostUpdate {
+	mutation := newFCirclePostMutation(c.config, OpUpdate)
+	return &FCirclePostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FCirclePostClient) UpdateOne(fp *FCirclePost) *FCirclePostUpdateOne {
+	mutation := newFCirclePostMutation(c.config, OpUpdateOne, withFCirclePost(fp))
+	return &FCirclePostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FCirclePostClient) UpdateOneID(id int) *FCirclePostUpdateOne {
+	mutation := newFCirclePostMutation(c.config, OpUpdateOne, withFCirclePostID(id))
+	return &FCirclePostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for FCirclePost.
+func (c *FCirclePostClient) Delete() *FCirclePostDelete {
+	mutation := newFCirclePostMutation(c.config, OpDelete)
+	return &FCirclePostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FCirclePostClient) DeleteOne(fp *FCirclePost) *FCirclePostDeleteOne {
+	return c.DeleteOneID(fp.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FCirclePostClient) DeleteOneID(id int) *FCirclePostDeleteOne {
+	builder := c.Delete().Where(fcirclepost.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FCirclePostDeleteOne{builder}
+}
+
+// Query returns a query builder for FCirclePost.
+func (c *FCirclePostClient) Query() *FCirclePostQuery {
+	return &FCirclePostQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFCirclePost},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a FCirclePost entity by its id.
+func (c *FCirclePostClient) Get(ctx context.Context, id int) (*FCirclePost, error) {
+	return c.Query().Where(fcirclepost.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FCirclePostClient) GetX(ctx context.Context, id int) *FCirclePost {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FCirclePostClient) Hooks() []Hook {
+	return c.hooks.FCirclePost
+}
+
+// Interceptors returns the client interceptors.
+func (c *FCirclePostClient) Interceptors() []Interceptor {
+	return c.inters.FCirclePost
+}
+
+func (c *FCirclePostClient) mutate(ctx context.Context, m *FCirclePostMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FCirclePostCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FCirclePostUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FCirclePostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FCirclePostDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown FCirclePost mutation op: %q", m.Op())
+	}
+}
+
+// FCircleStatisticClient is a client for the FCircleStatistic schema.
+type FCircleStatisticClient struct {
+	config
+}
+
+// NewFCircleStatisticClient returns a client for the FCircleStatistic from the given config.
+func NewFCircleStatisticClient(c config) *FCircleStatisticClient {
+	return &FCircleStatisticClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `fcirclestatistic.Hooks(f(g(h())))`.
+func (c *FCircleStatisticClient) Use(hooks ...Hook) {
+	c.hooks.FCircleStatistic = append(c.hooks.FCircleStatistic, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `fcirclestatistic.Intercept(f(g(h())))`.
+func (c *FCircleStatisticClient) Intercept(interceptors ...Interceptor) {
+	c.inters.FCircleStatistic = append(c.inters.FCircleStatistic, interceptors...)
+}
+
+// Create returns a builder for creating a FCircleStatistic entity.
+func (c *FCircleStatisticClient) Create() *FCircleStatisticCreate {
+	mutation := newFCircleStatisticMutation(c.config, OpCreate)
+	return &FCircleStatisticCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of FCircleStatistic entities.
+func (c *FCircleStatisticClient) CreateBulk(builders ...*FCircleStatisticCreate) *FCircleStatisticCreateBulk {
+	return &FCircleStatisticCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *FCircleStatisticClient) MapCreateBulk(slice any, setFunc func(*FCircleStatisticCreate, int)) *FCircleStatisticCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &FCircleStatisticCreateBulk{err: fmt.Errorf("calling to FCircleStatisticClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*FCircleStatisticCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &FCircleStatisticCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for FCircleStatistic.
+func (c *FCircleStatisticClient) Update() *FCircleStatisticUpdate {
+	mutation := newFCircleStatisticMutation(c.config, OpUpdate)
+	return &FCircleStatisticUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FCircleStatisticClient) UpdateOne(fs *FCircleStatistic) *FCircleStatisticUpdateOne {
+	mutation := newFCircleStatisticMutation(c.config, OpUpdateOne, withFCircleStatistic(fs))
+	return &FCircleStatisticUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FCircleStatisticClient) UpdateOneID(id int) *FCircleStatisticUpdateOne {
+	mutation := newFCircleStatisticMutation(c.config, OpUpdateOne, withFCircleStatisticID(id))
+	return &FCircleStatisticUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for FCircleStatistic.
+func (c *FCircleStatisticClient) Delete() *FCircleStatisticDelete {
+	mutation := newFCircleStatisticMutation(c.config, OpDelete)
+	return &FCircleStatisticDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FCircleStatisticClient) DeleteOne(fs *FCircleStatistic) *FCircleStatisticDeleteOne {
+	return c.DeleteOneID(fs.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FCircleStatisticClient) DeleteOneID(id int) *FCircleStatisticDeleteOne {
+	builder := c.Delete().Where(fcirclestatistic.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FCircleStatisticDeleteOne{builder}
+}
+
+// Query returns a query builder for FCircleStatistic.
+func (c *FCircleStatisticClient) Query() *FCircleStatisticQuery {
+	return &FCircleStatisticQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFCircleStatistic},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a FCircleStatistic entity by its id.
+func (c *FCircleStatisticClient) Get(ctx context.Context, id int) (*FCircleStatistic, error) {
+	return c.Query().Where(fcirclestatistic.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FCircleStatisticClient) GetX(ctx context.Context, id int) *FCircleStatistic {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *FCircleStatisticClient) Hooks() []Hook {
+	return c.hooks.FCircleStatistic
+}
+
+// Interceptors returns the client interceptors.
+func (c *FCircleStatisticClient) Interceptors() []Interceptor {
+	return c.inters.FCircleStatistic
+}
+
+func (c *FCircleStatisticClient) mutate(ctx context.Context, m *FCircleStatisticMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FCircleStatisticCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FCircleStatisticUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FCircleStatisticUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FCircleStatisticDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown FCircleStatistic mutation op: %q", m.Op())
 	}
 }
 
@@ -5240,16 +5522,17 @@ func (c *VisitorStatClient) mutate(ctx context.Context, m *VisitorStatMutation) 
 type (
 	hooks struct {
 		Album, AlbumCategory, Article, ArticleHistory, Comment, DirectLink, DocSeries,
-		Entity, Essay, File, FileEntity, GiveMoney, Link, LinkCategory, LinkTag,
-		Metadata, NotificationType, Page, PostCategory, PostTag, Setting,
-		StoragePolicy, Subscriber, Tag, URLStat, User, UserGroup, UserInstalledTheme,
-		UserNotificationConfig, VisitorLog, VisitorStat []ent.Hook
+		Entity, Essay, FCirclePost, FCircleStatistic, File, FileEntity, GiveMoney,
+		Link, LinkCategory, LinkTag, Metadata, NotificationType, Page, PostCategory,
+		PostTag, Setting, StoragePolicy, Subscriber, Tag, URLStat, User, UserGroup,
+		UserInstalledTheme, UserNotificationConfig, VisitorLog, VisitorStat []ent.Hook
 	}
 	inters struct {
 		Album, AlbumCategory, Article, ArticleHistory, Comment, DirectLink, DocSeries,
-		Entity, Essay, File, FileEntity, GiveMoney, Link, LinkCategory, LinkTag,
-		Metadata, NotificationType, Page, PostCategory, PostTag, Setting,
-		StoragePolicy, Subscriber, Tag, URLStat, User, UserGroup, UserInstalledTheme,
-		UserNotificationConfig, VisitorLog, VisitorStat []ent.Interceptor
+		Entity, Essay, FCirclePost, FCircleStatistic, File, FileEntity, GiveMoney,
+		Link, LinkCategory, LinkTag, Metadata, NotificationType, Page, PostCategory,
+		PostTag, Setting, StoragePolicy, Subscriber, Tag, URLStat, User, UserGroup,
+		UserInstalledTheme, UserNotificationConfig, VisitorLog,
+		VisitorStat []ent.Interceptor
 	}
 )

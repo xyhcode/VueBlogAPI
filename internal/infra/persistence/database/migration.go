@@ -31,6 +31,11 @@ func NewMigrationService(db *sql.DB, dbType string) *MigrationService {
 func (m *MigrationService) RunMigrations(ctx context.Context) error {
 	log.Println("📋 开始执行数据库迁移...")
 
+	// 清理 fcircle_posts 表中的数据，以便进行类型转换
+	if err := m.cleanupFCirclePosts(ctx); err != nil {
+		return fmt.Errorf("清理 fcircle_posts 表失败: %w", err)
+	}
+
 	// 检查并执行 owner_id 字段迁移
 	if err := m.migrateOwnerID(ctx); err != nil {
 		return fmt.Errorf("owner_id 字段迁移失败: %w", err)
@@ -340,6 +345,70 @@ func (m *MigrationService) migrateReviewFields(ctx context.Context) error {
 	return nil
 }
 
+// cleanupFCirclePosts 清理 fcircle_posts 表中的数据
+// 注意：已注释掉数据清理逻辑，因为这会导致每次启动时都重新爬取
+// 只在表结构发生重大变更时才需要清理数据
+func (m *MigrationService) cleanupFCirclePosts(ctx context.Context) error {
+	// 检查 fcircle_posts 表是否存在
+	tableExists, err := m.tableExists(ctx, "fcircle_posts")
+	if err != nil {
+		return err
+	}
+
+	if !tableExists {
+		log.Println("  ✓ fcircle_posts 表不存在，跳过清理")
+		return nil
+	}
+
+	// 注释掉数据清理逻辑，避免每次启动都清空数据
+	// 只在表结构发生重大变更时才需要清理
+	log.Println("  ✓ fcircle_posts 表存在，跳过数据清理")
+	return nil
+}
+
+// tableExists 检查表是否存在
+func (m *MigrationService) tableExists(ctx context.Context, tableName string) (bool, error) {
+	var query string
+	var args []interface{}
+
+	switch m.dbType {
+	case "mysql", "mariadb":
+		query = `
+			SELECT COUNT(*)
+			FROM INFORMATION_SCHEMA.TABLES
+			WHERE TABLE_SCHEMA = DATABASE()
+			AND TABLE_NAME = ?
+		`
+		args = []interface{}{tableName}
+
+	case "postgres":
+		query = `
+			SELECT COUNT(*)
+			FROM information_schema.tables
+			WHERE table_name = $1
+		`
+		args = []interface{}{tableName}
+
+	case "sqlite", "sqlite3":
+		query = `
+			SELECT COUNT(*)
+			FROM pragma_table_info(?)
+		`
+		args = []interface{}{tableName}
+
+	default:
+		return false, fmt.Errorf("不支持的数据库类型: %s", m.dbType)
+	}
+
+	var count int
+	err := m.db.QueryRowContext(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 // columnExists 检查列是否存在
 func (m *MigrationService) columnExists(ctx context.Context, tableName, columnName string) (bool, error) {
 	var query string
@@ -348,26 +417,26 @@ func (m *MigrationService) columnExists(ctx context.Context, tableName, columnNa
 	switch m.dbType {
 	case "mysql", "mariadb":
 		query = `
-			SELECT COUNT(*) 
-			FROM INFORMATION_SCHEMA.COLUMNS 
-			WHERE TABLE_SCHEMA = DATABASE() 
-			AND TABLE_NAME = ? 
+			SELECT COUNT(*)
+			FROM INFORMATION_SCHEMA.COLUMNS
+			WHERE TABLE_SCHEMA = DATABASE()
+			AND TABLE_NAME = ?
 			AND COLUMN_NAME = ?
 		`
 		args = []interface{}{tableName, columnName}
 
 	case "postgres":
 		query = `
-			SELECT COUNT(*) 
-			FROM information_schema.columns 
-			WHERE table_name = $1 
+			SELECT COUNT(*)
+			FROM information_schema.columns
+			WHERE table_name = $1
 			AND column_name = $2
 		`
 		args = []interface{}{tableName, columnName}
 
 	case "sqlite", "sqlite3":
 		query = `
-			SELECT COUNT(*) 
+			SELECT COUNT(*)
 			FROM pragma_table_info(?)
 			WHERE name = ?
 		`

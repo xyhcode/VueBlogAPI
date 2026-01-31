@@ -45,6 +45,7 @@ import (
 	direct_link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/direct_link"
 	doc_series_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/doc_series"
 	essay_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/essay"
+	fcircle_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/fcircle"
 	file_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/file"
 	givemoney_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/givemoney"
 	link_handler "github.com/anzhiyu-c/anheyu-app/pkg/handler/link"
@@ -79,6 +80,7 @@ import (
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/direct_link"
 	doc_series_service "github.com/anzhiyu-c/anheyu-app/pkg/service/doc_series"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/essay"
+	fcircle_service "github.com/anzhiyu-c/anheyu-app/pkg/service/fcircle"
 	file_service "github.com/anzhiyu-c/anheyu-app/pkg/service/file"
 	"github.com/anzhiyu-c/anheyu-app/pkg/service/file_info"
 	geetest_service "github.com/anzhiyu-c/anheyu-app/pkg/service/geetest"
@@ -332,8 +334,8 @@ func NewApp(content embed.FS) (*App, func(), error) {
 
 	// 初始化文章历史版本服务（需要在taskBroker之前创建，用于定时清理任务）
 	articleHistorySvc := article_history_service.NewService(articleHistoryRepo, articleRepo, userRepo)
-
-	taskBroker := task.NewBroker(uploadSvc, thumbnailSvc, cleanupSvc, articleRepo, commentRepo, emailSvc, cacheSvc, linkCategoryRepo, linkTagRepo, linkRepo, settingSvc, statService, articleHistorySvc)
+	// 初始化任务调度器
+	taskBroker := task.NewBroker(uploadSvc, thumbnailSvc, cleanupSvc, articleRepo, commentRepo, emailSvc, cacheSvc, linkCategoryRepo, linkTagRepo, linkRepo, settingSvc, statService, articleHistorySvc, entClient, redisClient)
 	pageSvc := page_service.NewService(pageRepo)
 
 	// 初始化搜索服务
@@ -454,8 +456,13 @@ func NewApp(content embed.FS) (*App, func(), error) {
 
 	// 初始化随笔服务
 	log.Printf("[DEBUG] 正在初始化 EssayService...")
-	essaySvc := essay.NewService(essayRepo)
+	easySvc := essay.NewService(essayRepo)
 	log.Printf("[DEBUG] EssayService 初始化完成")
+
+	// 初始化朋友圈服务
+	log.Printf("[DEBUG] 正在初始化 FCircleService...")
+	fcircleSvc := fcircle_service.NewService(entClient, redisClient)
+	log.Printf("[DEBUG] FCircleService 初始化完成")
 
 	// --- Phase 6: 初始化表现层 (Handlers) ---
 	mw := middleware.NewMiddleware(tokenSvc)
@@ -467,7 +474,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 	settingHandler := setting_handler.NewSettingHandler(settingSvc, emailSvc, cdnSvc, configBackupSvc)
 	storagePolicyHandler := storage_policy_handler.NewStoragePolicyHandler(storagePolicySvc)
 	giveMoneyHandler := givemoney_handler.NewGiveMoneyHandler(giveMoneySvc)
-	essayHandler := essay_handler.NewHandler(essaySvc)
+	essayHandler := essay_handler.NewHandler(easySvc)
 	fileHandler := file_handler.NewHandler(fileSvc, uploadSvc, settingSvc)
 	directLinkHandler := direct_link_handler.NewDirectLinkHandler(directLinkSvc, storageProviders)
 	linkHandler := link_handler.NewHandler(linkSvc)
@@ -491,6 +498,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 	configImportExportHandler := config_handler.NewConfigImportExportHandler(configImportExportSvc)
 	subscriberHandler := subscriber_handler.NewHandler(subscriberSvc, captchaSvc)
 	captchaHandler := captcha_handler.NewHandler(captchaSvc)
+	fcircleHandler := fcircle_handler.NewHandler(fcircleSvc, redisClient, linkRepo)
 
 	// --- Phase 7: 初始化路由 ---
 	appRouter := router.NewRouter(
@@ -527,6 +535,7 @@ func NewApp(content embed.FS) (*App, func(), error) {
 		configImportExportHandler,
 		subscriberHandler,
 		captchaHandler,
+		fcircleHandler,
 	)
 
 	// --- Phase 8: 配置 Gin 引擎 ---

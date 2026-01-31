@@ -138,6 +138,15 @@ func NewEntClient(db *sql.DB, cfg *config.Config) (*ent.Client, error) {
 	// 使用所有收集到的选项创建客户端
 	client := ent.NewClient(entOptions...)
 
+	// 清理 fcircle_posts 表中的数据，以便进行类型转换
+	//log.Println("⚡ 清理 fcircle_posts 表中的数据...")
+	//if _, err := db.ExecContext(context.Background(), "DELETE FROM fcircle_posts"); err != nil {
+	//	log.Printf("⚠️ 警告：清理 fcircle_posts 表失败: %v", err)
+	//	// 不中断启动流程，但记录错误
+	//}
+	//log.Println("✅ fcircle_posts 表清理完成")
+	log.Println("⚠️ 跳过 fcircle_posts 表清理，保留现有数据")
+
 	// 在启动时自动迁移数据库结构
 	log.Println("⚡ 开始数据库表结构迁移...")
 	if err := client.Schema.Create(context.Background(),

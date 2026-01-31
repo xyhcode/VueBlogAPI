@@ -61,8 +61,8 @@ func (s *imageCaptchaService) Generate(ctx context.Context) (captchaId string, i
 		0,      // showLineOptions - 干扰线选项
 		length, // length - 验证码长度
 		"23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ", // source - 排除容易混淆的字符
-		nil,   // bgColor
-		nil,   // fontsStorage
+		nil,                          // bgColor
+		nil,                          // fontsStorage
 		[]string{"wqy-microhei.ttc"}, // fonts
 	)
 
